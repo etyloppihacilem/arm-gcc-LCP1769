@@ -1,4 +1,4 @@
-/* Linker script for mbed LPC1768 */
+/* Linker script for mbed LPC1769 */
 
 /* Linker script to configure memory regions. */
 MEMORY

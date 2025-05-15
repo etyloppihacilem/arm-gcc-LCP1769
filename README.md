@@ -1,14 +1,11 @@
-arm-gcc-barebones
-=================
+LCP1769_blank
+=============
 
-Quick project to get gcc-arm working for my LPC1768. The result is a combination of a makefile, linker file, and a few c files to get started.
+Forked from [alvarop/arm-gcc-barebones](https://github.com/alvarop/arm-gcc-barebones).
 
-I started by exporting a simple blinky program from the MBED online compiler. It generated the makefile and supplied all additional needed files.
+Nothing really changed, I need to take a look at SystemCoreClock to check if it is set right for LCP1769...
 
-Once I tested by compiling myself and running the blinky, I began removing MBED stuff and replacing it with plain old C. Eventually, I was able to remove all the precompiled MBED libraries.
-
-You can look through the commit history to see what I did. :-)
-
+I added clangd config file and the flash command using openocd to flash the chip.
 
 NOTES:
 

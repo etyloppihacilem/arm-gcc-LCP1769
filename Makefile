@@ -52,3 +52,6 @@ $(PROJECT).bin: $(PROJECT).elf nxpsum
 	$(OBJCOPY) -O binary $< $@
 	# Compute nxp checksum on .bin file here
 	./nxpsum $@
+
+flash:
+	openocd -f interface/cmsis-dap.cfg -f target/lpc17xx.cfg -c "adapter speed 4000" -c "program $(PROJECT).bin verify reset exit"

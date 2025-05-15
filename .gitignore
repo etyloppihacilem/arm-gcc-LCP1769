@@ -5,3 +5,5 @@
 NOT*
 nxpsum
 *.bak
+build/**
+.clangd

@@ -59,7 +59,10 @@ re: clean
 flash:
 	openocd -f interface/cmsis-dap.cfg -f target/lpc17xx.cfg -c "adapter speed 4000" -c "program $(PROJECT).bin verify reset exit"
 
-.PHONY: all clean re flash
+clangd: # configure clangd for tests
+	bash ./tools/clangd_generator.sh
+
+.PHONY: all clean re flash clangd
 
 ###############################################################################
 ${BUILD_DIR}:

@@ -1,11 +1,34 @@
-PROJECT = blink
-OBJECTS = system_LPC17xx.o startup_LPC17xx.o main.o
+# ######################################################################################################################
+#
+#              """          Makefile
+#       -\-    _|__
+#        |\___/  . \        Created on 15 May. 2025 at 17:14
+#        \     /(((/        by hmelica
+#         \___/)))/         hmelica@student.42.fr
+#
+# ######################################################################################################################
+
+
+####################
+## Project config ##
+####################
+
+SRC_DIR		= src
+PROJECT		= blink
+SRC_FILES	= $(shell find $(SRC_DIR) -type f -name "*.c")
+
+##############
+## Make var ##
+##############
+
 SYS_OBJECTS =
 INCLUDE_PATHS = -I. -I./LPC1769
 LIBRARY_PATHS =
 LIBRARIES =
 LINKER_SCRIPT = ./LPC1769/LPC1769.ld
-BUILD_DIR = build/
+BUILD_DIR = build
+OBJECTS = build/system_LPC17xx.o build/startup_LPC17xx.o
+OBJECTS += $(patsubst ${SRC_DIR}%.c,${BUILD_DIR}%.o,${SRC_FILES})
 
 ###############################################################################
 AS      = $(GCC_BIN)arm-none-eabi-as
@@ -23,35 +46,40 @@ CC_SYMBOLS = -DTARGET_LPC1769 -DTOOLCHAIN_GCC_ARM -DNDEBUG -D__CORTEX_M3
 LD_FLAGS = -mcpu=cortex-m3 -mthumb -Wl,--gc-sections,-Map=$(PROJECT).map,--cref --specs=nano.specs
 LD_SYS_LIBS = -lc -lgcc -lnosys
 
+NXPSUM = ./tools/nxpsum
+
 all: $(PROJECT).bin
 
 clean:
-	rm -f $(PROJECT).bin $(PROJECT).elf $(addprefix $(BUILD_DIR), $(OBJECTS)) $(PROJECT).map
-	rmdir $(BUILD_DIR)
+	rm -rf $(PROJECT).bin $(PROJECT).elf $(BUILD_DIR) $(PROJECT).map ${LXPSUM}
 
-.s.o:
-	mkdir -p $(BUILD_DIR)
-	$(AS) $(CPU) -o $(addprefix $(BUILD_DIR), $@) $<
-
-.c.o:
-	mkdir -p $(BUILD_DIR)
-	$(CC)  $(CC_FLAGS) $(CC_SYMBOLS) -std=gnu99   $(INCLUDE_PATHS) -o $(addprefix $(BUILD_DIR), $@) $<
-
-.cpp.o:
-	mkdir -p $(BUILD_DIR)
-	$(CPP) $(CC_FLAGS) $(CC_SYMBOLS) -std=gnu++98 $(INCLUDE_PATHS) -o $(addprefix $(BUILD_DIR), $@) $<
-
-# This is needed for NXP Cortex M devices
-nxpsum:
-	$(CCLOCAL) nxpsum.c -std=c99 -o nxpsum
-
-$(PROJECT).elf: $(OBJECTS) $(SYS_OBJECTS)
-	$(LD) $(LD_FLAGS) -T$(LINKER_SCRIPT) $(LIBRARY_PATHS) -o $@ $(addprefix $(BUILD_DIR), $^) $(LIBRARIES) $(LD_SYS_LIBS) $(LIBRARIES) $(LD_SYS_LIBS)
-
-$(PROJECT).bin: $(PROJECT).elf nxpsum
-	$(OBJCOPY) -O binary $< $@
-	# Compute nxp checksum on .bin file here
-	./nxpsum $@
+re: clean
+	${MAKE}
 
 flash:
 	openocd -f interface/cmsis-dap.cfg -f target/lpc17xx.cfg -c "adapter speed 4000" -c "program $(PROJECT).bin verify reset exit"
+
+.PHONY: all clean re flash
+
+###############################################################################
+${BUILD_DIR}:
+	mkdir -p ${BUILD_DIR}
+
+${BUILD_DIR}/%.o: ${SRC_DIR}/%.c | ${BUILD_DIR}
+	$(CC)  $(CC_FLAGS) $(CC_SYMBOLS) -std=gnu99   $(INCLUDE_PATHS) -o $@ $<
+
+.cpp.o:
+	mkdir -p $(BUILD_DIR)
+	$(CPP) $(CC_FLAGS) $(CC_SYMBOLS) -std=gnu++98 $(INCLUDE_PATHS) -o $@ $<
+
+# This is needed for NXP Cortex M devices
+${NXPSUM}:
+	$(CCLOCAL) tools/nxpsum.c -std=c99 -o ${NXPSUM}
+
+$(PROJECT).elf: $(OBJECTS) $(SYS_OBJECTS)
+	$(LD) $(LD_FLAGS) -T$(LINKER_SCRIPT) $(LIBRARY_PATHS) -o $@ $^ $(LIBRARIES) $(LD_SYS_LIBS) $(LIBRARIES) $(LD_SYS_LIBS)
+
+$(PROJECT).bin: $(PROJECT).elf ${NXPSUM}
+	$(OBJCOPY) -O binary $< $@
+	# Compute nxp checksum on .bin file here
+	${NXPSUM} $@

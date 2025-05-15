@@ -3,48 +3,49 @@
 // http://sigalrm.blogspot.com/2011/10/cortex-m3-exception-vector-checksum.html
 // http://support.code-red-tech.com/CodeRedWiki/OutputFormats
 //
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
-	if(argc < 2) {
-		printf("Usage: %s filename.bin\n", argv[0]);
-		exit(1);
-	}
+    if (argc < 2) {
+        printf("Usage: %s filename.bin\n", argv[0]);
+        exit(1);
+    }
 
-	FILE *binfile;
+    FILE *binfile;
 
-	char *filename = argv[1];
+    char *filename = argv[1];
 
-	binfile = fopen(filename, "r+");
+    binfile = fopen(filename, "r+");
 
-	if(binfile != NULL) {
+    if (binfile != NULL) {
 
-		uint32_t checksum = 0;
+        uint32_t checksum = 0;
 
-		for(uint8_t index = 0; index < 7; index++) {
+        for (uint8_t index = 0; index < 7; index++) {
 
-			uint32_t word;
+            uint32_t word;
 
-			if(fread(&word, 4, 1, binfile) != 1) {
-				printf("Error reading from file\n");
-				exit(1);
-			}
+            if (fread(&word, 4, 1, binfile) != 1) {
+                printf("Error reading from file\n");
+                exit(1);
+            }
 
-			checksum += word;
-		}
+            checksum += word;
+        }
 
-		checksum = -checksum;
+        checksum = -checksum;
 
-		fseek(binfile, 0x1c, SEEK_SET);
-		fwrite(&checksum, 4, 1, binfile);
-		fclose(binfile);
+        fseek(binfile, 0x1c, SEEK_SET);
+        fwrite(&checksum, 4, 1, binfile);
+        printf("Checksum is %x\n", checksum);
+        fclose(binfile);
 
-	} else {
-		printf("Error opening file %s\n", filename);
-	}
+    } else {
+        printf("Error opening file %s\n", filename);
+    }
 
-	return 0;
+    return 0;
 }

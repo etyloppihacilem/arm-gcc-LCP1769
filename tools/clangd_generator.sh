@@ -3,7 +3,7 @@ CompileFlags:
   Add:
     - "-Wall"
     - "-Wextra"
-    - "-l$(realpath LPC1769)"
+    - "-I$(realpath LPC1769)"
     - "-ferror-limit=0"
 
 Diagnostics:

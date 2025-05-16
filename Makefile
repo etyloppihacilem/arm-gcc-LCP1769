@@ -21,6 +21,8 @@ SRC_FILES	= $(shell find $(SRC_DIR) -type f -name "*.c")
 ## Make var ##
 ##############
 
+SYS_SRCS = LPC1769/startup_LPC17xx.c LPC1769/system_LPC17xx.c
+SYS_SRCS_DIR = LPC1769
 SYS_OBJECTS =
 INCLUDE_PATHS = -I. -I./LPC1769
 LIBRARY_PATHS =
@@ -29,6 +31,7 @@ LINKER_SCRIPT = ./LPC1769/LPC1769.ld
 BUILD_DIR = build
 OBJECTS = build/system_LPC17xx.o build/startup_LPC17xx.o
 OBJECTS += $(patsubst ${SRC_DIR}%.c,${BUILD_DIR}%.o,${SRC_FILES})
+OBJECTS += $(patsubst ${SYS_SRCS_DIR}%.c,${BUILD_DIR}%.o,${SYS_SRCS})
 
 ###############################################################################
 AS      = $(GCC_BIN)arm-none-eabi-as
@@ -69,6 +72,9 @@ ${BUILD_DIR}:
 	mkdir -p ${BUILD_DIR}
 
 ${BUILD_DIR}/%.o: ${SRC_DIR}/%.c | ${BUILD_DIR}
+	$(CC)  $(CC_FLAGS) $(CC_SYMBOLS) -std=gnu99   $(INCLUDE_PATHS) -o $@ $<
+
+${BUILD_DIR}/%.o: ${SYS_SRCS_DIR}/%.c | ${BUILD_DIR}
 	$(CC)  $(CC_FLAGS) $(CC_SYMBOLS) -std=gnu99   $(INCLUDE_PATHS) -o $@ $<
 
 .cpp.o:
